@@ -5,6 +5,9 @@ var Comment = mongoose.model("Comment");
 var User = mongoose.model("User");
 var auth = require("../auth");
 const { sendEvent } = require("../../lib/event");
+const { generateImage } = require("../../lib/dalle");
+
+
 
 // Preload item objects on routes with ':item'
 router.param("item", function(req, res, next, slug) {
@@ -147,6 +150,10 @@ router.post("/", auth.required, function(req, res, next) {
       var item = new Item(req.body.item);
 
       item.seller = user;
+
+      if (!item.image) {
+        item.image = generateImage(item.title, 1, '256x256')
+      }
 
       return item.save().then(function() {
         sendEvent('item_created', { item: req.body.item })
